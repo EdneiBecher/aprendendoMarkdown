@@ -20,20 +20,51 @@ dados<- read.csv2("C:/Users/ednei/OneDrive/R_Nuvem/aprendendoMarkdown/planilha_e
 
 ## Aprendendo R Markdown
 
-O objetivo deste material é apresentar a análise de um *dataframe* utilizando o **RStudio** e alguns packages do R. Ao mesmo tempo que as análises serão desenvolvidas também serão apresentados textos e comentários explicativos.  
+O objetivo deste material é apresentar a análise de um *dataframe* utilizando o **RStudio** e alguns packages do R, no caso ggplot2 e dplyr. Ao mesmo tempo que as análises serão desenvolvidas também serão apresentados textos e comentários.  
+
+### Conhecendo e ajustando os dados
 A primeira coisa a ser feita é olharmos a estrutura da tabela.
 ```{r}
  glimpse(dados)
 ```
-Podemos verificar que o *dataset* contém `r nrow(dados)` casos e `r ncol(dados)`variáveis, ...
+Podemos verificar que o *dataset* contém `r nrow(dados)` casos e `r ncol(dados)`variáveis, senso as variáveis Sexo, Cor.de.cabelo, Hobby e Desempenho.em.Matemática classificadas de forma inadequada durante importação. Isso porque aparecem como character, ou seja, como strings de texto e na verdade ficaram melhor qualificadas se estivessem como fatores (variáveis categóricas).  
+Assim, para procedermos a alteração podemos alterar a classificação das variáveis podemos utilizar o comando mutate do *package* dplyr.
+```{r}
+# alterando a classificação das variaveis usando dplyr
+dados<- dados %>% 
+  mutate(Sexo = as.factor(Sexo),
+         Hobby = as.factor(Hobby),
+         Cor.de.cabelo = as.factor(Cor.de.cabelo))
+```
+Acontece que se tentarmos alterar o tipo da variável Desempenho.em.Matemática teremos um erro devido a acentuação, desta forma, para resolvermos o problema precisamos alterar o nome da variável.
+```{r}
+#alterando o nomes das variáveis
+#optei por usar R base porque a alteração me parece mais simples e direta
+colnames(dados)[4]<-"Altura"
+colnames(dados)[5]<- "Peso"
+colnames(dados)[6]<- "NumIrmaos"
+colnames(dados)[7]<- "CorCabelo"
+colnames(dados)[9]<- "NumSapato"
+colnames(dados)[11]<- "DesempenhoMat"
 
-para inserir linhas em branco pode-se usar <br>
+#agora alterar o tipo da variavel desempenho
+
+dados<- dados %>% 
+  mutate(DesempenhoMat = as.factor(DesempenhoMat))
+
+#verificar as alterações
+
+glimpse(dados)
+
+```
 
 Outra coisa que devemos fazer é olharmos as primeiras linhas do dataset.
 ```{r}
 head(dados)
+# para inserir linhas em branco pode-se usar <br>
 ```
 
+### Detalhando os dados com medidas e gráficos
 O passo seguinte será...
 
 ```{r, echo=FALSE}
@@ -47,8 +78,20 @@ dados %>%
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r, echo=FALSE}
+# grafico utilizando o comando plot do R base
+# tambem são acrescentados os parâmetros pch que indica a forma dos pontos
+# main para incluir o titulo, xlab e ylab para alterar a legenda dos eixos
+# col para indicar a cor dos pontos mas é possivel especificar (col.main, col.sub, col.lab, col.axis, fg (cor da caixa do grafico))
+#ylim e xlim para indicar os limties dos eixos
+# o parâmetro ann exibe ou esconte o nome dos eixos
+# o parâmetro las permite rotar as indicações nos eixos (1, normal; 2- horizontal; 3 - perpendicular e 4 - vertical)
+# os parâmetros cex.main, cex.sub, cex.lab e cex.axis alterar o tamanho da fonte
+# o parâmetro font altera a fonte (1 - normal, 2 - negrito, 3 - italico e 4 - negrito e italico)
+# também é possivel especificar (font.main, fonti.sub, font.axis, font.lab)
+# para alterar o tipo de fonte se utiliza family (verificar as fontes disponiveis - names(pdfFonts()))
+
+plot(x=dados$Peso, y=dados$Altura, main= "Relação entre Peso e Altura", pch=18, col="blue", xlab = "Idade", ylab = "Altura", sub = "Fonte: Autoria própria", ann = TRUE)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
