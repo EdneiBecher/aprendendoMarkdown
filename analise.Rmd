@@ -74,15 +74,25 @@ dados %>%
 
 ```
 
-## Including Plots
+## Gráficos
 
-You can also embed plots, for example:
+Na sequência vamos construir alguns gráficos. Primeiro usando o R base e depois usando o ggplot2.
+
+### Gráfico usando o comando plot do R base
+Serão apresentados dois gráficos nos quais as diferenças estão relacionadas aos parãmetros incluídos no comando.
 
 ```{r, echo=FALSE}
-# grafico utilizando o comando plot do R base
-# tambem são acrescentados os parâmetros pch que indica a forma dos pontos
-# main para incluir o titulo, xlab e ylab para alterar a legenda dos eixos
+
+# o parâmetro pch indica a forma dos pontos
+# main inclui o titulo, xlab e ylab servem para alterar a legenda dos eixos
 # col para indicar a cor dos pontos mas é possivel especificar (col.main, col.sub, col.lab, col.axis, fg (cor da caixa do grafico))
+
+plot(x=dados$Peso, y=dados$Altura, main= "Relação entre Peso e Altura", pch=18, col="blue", xlab = "Peso", ylab = "Altura")
+```
+
+Agora vejamos o mesmo gráfico com mais alguns parâmetros.
+```{r, echo=FALSE}
+# outros parâmetros que podem ser utilizados
 #ylim e xlim para indicar os limties dos eixos
 # o parâmetro ann exibe ou esconte o nome dos eixos
 # o parâmetro las permite rotar as indicações nos eixos (1, normal; 2- horizontal; 3 - perpendicular e 4 - vertical)
@@ -91,7 +101,10 @@ You can also embed plots, for example:
 # também é possivel especificar (font.main, fonti.sub, font.axis, font.lab)
 # para alterar o tipo de fonte se utiliza family (verificar as fontes disponiveis - names(pdfFonts()))
 
-plot(x=dados$Peso, y=dados$Altura, main= "Relação entre Peso e Altura", pch=18, col="blue", xlab = "Idade", ylab = "Altura", sub = "Fonte: Autoria própria", ann = TRUE)
+plot(x=dados$Peso, y=dados$Altura, main= "Relação entre Peso e Altura", pch=17, col="green", xlab = "Peso", ylab = "Altura", sub = "Fonte: Autoria própria", ann = TRUE,
+     xlim = c(50, 90), ylim = c(150, 180), cex.main=2, cex.sub=.7, font.sub=1, family="serif")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+### Gráficos usando o ggplot2
+
