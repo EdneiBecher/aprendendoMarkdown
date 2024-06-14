@@ -1,0 +1,54 @@
+---
+title: "AnaliseEstudantes"
+author: "Ednei"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    html_document:
+      highlight: textmate # destaque nos codigos
+      number_sections: no  # insere numeracao automatica nas secoes
+      toc: yes # insere um tabela de conteudos/titulos
+      toc_float:  # posiciona a tabela de titulos a esquerda
+        collapsed: no
+---
+
+```{r setup, include=FALSE}
+library(dplyr) 
+library(ggplot2)
+
+dados<- read.csv2("C:/Users/ednei/OneDrive/R_Nuvem/aprendendoMarkdown/planilha_exemplo_dante.csv", fileEncoding = "latin1")
+```
+
+## Aprendendo R Markdown
+
+O objetivo deste material é apresentar a análise de um *dataframe* utilizando o **RStudio** e alguns packages do R. Ao mesmo tempo que as análises serão desenvolvidas também serão apresentados textos e comentários explicativos.  
+A primeira coisa a ser feita é olharmos a estrutura da tabela.
+```{r}
+ glimpse(dados)
+```
+Podemos verificar que o *dataset* contém `r nrow(dados)` casos e `r ncol(dados)`variáveis, ...
+
+para inserir linhas em branco pode-se usar <br>
+
+Outra coisa que devemos fazer é olharmos as primeiras linhas do dataset.
+```{r}
+head(dados)
+```
+
+O passo seguinte será...
+
+```{r, echo=FALSE}
+dados %>% 
+  group_by(Sexo) %>% 
+  summarise(IdadeMedia = round(mean(Idade), 1))
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
