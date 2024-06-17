@@ -106,5 +106,17 @@ plot(x=dados$Peso, y=dados$Altura, main= "Relação entre Peso e Altura", pch=17
 ```
 
 
-### Gráficos usando o ggplot2
+### Gráficos usando o ggplot2  
+
+Uma forma muito popular de criar gráficos no R é utilizar o *package* **ggplot2**.
+
+```{r}
+dados %>% 
+  ggplot(aes(x=Peso, y=Altura, colour = Sexo))+
+  geom_point(shape = 15)+ # alterar a forma dos pontos
+  labs(title = "Gráfico que relaciona Idade e Altura",subtitle = "Visualização",
+       caption = "Elaborado pelo autor")+ # inserir titulo e subtitulo
+  scale_color_discrete(name="Sexo", labels=c("Feminino", "Masculino")) + # alterar os nomes na legenda
+  theme(legend.position = "bottom") # alterar a posição da legenda
+```
 
