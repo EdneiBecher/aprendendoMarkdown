@@ -119,4 +119,34 @@ dados %>%
   scale_color_discrete(name="Sexo", labels=c("Feminino", "Masculino")) + # alterar os nomes na legenda
   theme(legend.position = "bottom") # alterar a posição da legenda
 ```
+  
+## Modelo Regressão Linear
 
+Para descrever os dados algébricamente, identificar e validar algébricamente modelos matemáticos que descrevem dados um dos métodos mais comuns é a regressão linear.  Nesta etapa usaremos os mesmos dados utilizados nos casas anterirores no qual estudamos a base de dados *mtcars*.
+
+
+### Usando R base
+Vamos inserir um reta modelando os dados empregados no gráfico acima.
+```{r, echo=FALSE}
+mod1<- lm(dados$Peso~ dados$Altura)
+plot(x=dados$Peso, y=dados$Altura, main= "Relação entre Peso e Altura", pch=10, col="red", xlab = "Peso", ylab = "Altura")
+abline(lm(dados$Altura~ dados$Peso))
+
+```
+
+Podemos analisar todos os parâmetros resultantes da função lm.
+```{r}
+summary(mod1)
+```
+### Usando Ggplot2
+Agora fazendo a mesma regressão no ggplot2.
+```{r}
+dados %>% 
+  ggplot(aes(x=Peso, y=Altura))+
+  geom_point(shape = 15)+
+  geom_smooth(method = "lm")+
+  labs(title = "Gráfico que relaciona Idade e Altura",subtitle = "Visualização",
+       caption = "Elaborado pelo autor")+ 
+  scale_color_discrete(name="Sexo", labels=c("Feminino", "Masculino")) + 
+  theme(legend.position = "bottom")
+```
