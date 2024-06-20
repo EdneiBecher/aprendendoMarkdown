@@ -65,12 +65,14 @@ head(dados)
 ```
 
 ### Detalhando os dados com medidas e gráficos
-O passo seguinte será...
+Nesta primeira tabela são apresentadas a altura, idade e peso médio dos participantes
 
 ```{r, echo=FALSE}
 dados %>% 
   group_by(Sexo) %>% 
-  summarise(IdadeMedia = round(mean(Idade), 1))
+  summarise(IdadeMedia = round(mean(Idade), 1),
+            AlturaMedia = round(mean(Altura), 1),
+            PesoMedio = round(mean(Peso), 1))
 
 ```
 
@@ -87,7 +89,7 @@ Serão apresentados dois gráficos nos quais as diferenças estão relacionadas 
 # main inclui o titulo, xlab e ylab servem para alterar a legenda dos eixos
 # col para indicar a cor dos pontos mas é possivel especificar (col.main, col.sub, col.lab, col.axis, fg (cor da caixa do grafico))
 
-plot(x=dados$Peso, y=dados$Altura, main= "Relação entre Peso e Altura", pch=18, col="blue", xlab = "Peso", ylab = "Altura")
+plot(x=dados$Peso, y=dados$Altura, main= "Relacao entre Peso e Altura", pch=18, col="blue", xlab = "Peso", ylab = "Altura")
 ```
 
 Agora vejamos o mesmo gráfico com mais alguns parâmetros.
@@ -101,7 +103,7 @@ Agora vejamos o mesmo gráfico com mais alguns parâmetros.
 # também é possivel especificar (font.main, fonti.sub, font.axis, font.lab)
 # para alterar o tipo de fonte se utiliza family (verificar as fontes disponiveis - names(pdfFonts()))
 
-plot(x=dados$Peso, y=dados$Altura, main= "Relação entre Peso e Altura", pch=17, col="green", xlab = "Peso", ylab = "Altura", sub = "Fonte: Autoria própria", ann = TRUE,
+plot(x=dados$Peso, y=dados$Altura, main= "Relacao entre Peso e Altura", pch=17, col="green", xlab = "Peso", ylab = "Altura", sub = "Fonte: Autoria propria", ann = TRUE,
      xlim = c(50, 90), ylim = c(150, 180), cex.main=2, cex.sub=.7, font.sub=1, family="serif")
 ```
 
@@ -114,7 +116,7 @@ Uma forma muito popular de criar gráficos no R é utilizar o *package* **ggplot
 dados %>% 
   ggplot(aes(x=Peso, y=Altura, colour = Sexo))+
   geom_point(shape = 15)+ # alterar a forma dos pontos
-  labs(title = "Gráfico que relaciona Idade e Altura",subtitle = "Visualização",
+  labs(title = "Grafico que relaciona Idade e Altura",subtitle = "Visualizacao",
        caption = "Elaborado pelo autor")+ # inserir titulo e subtitulo
   scale_color_discrete(name="Sexo", labels=c("Feminino", "Masculino")) + # alterar os nomes na legenda
   theme(legend.position = "bottom") # alterar a posição da legenda
@@ -129,7 +131,7 @@ Para descrever os dados algébricamente, identificar e validar algébricamente m
 Vamos inserir um reta modelando os dados empregados no gráfico acima.
 ```{r, echo=FALSE}
 mod1<- lm(dados$Peso~ dados$Altura)
-plot(x=dados$Peso, y=dados$Altura, main= "Relação entre Peso e Altura", pch=10, col="red", xlab = "Peso", ylab = "Altura")
+plot(x=dados$Peso, y=dados$Altura, main= "Relacao entre Peso e Altura", pch=10, col="red", xlab = "Peso", ylab = "Altura")
 abline(lm(dados$Altura~ dados$Peso))
 
 ```
@@ -145,8 +147,26 @@ dados %>%
   ggplot(aes(x=Peso, y=Altura))+
   geom_point(shape = 15)+
   geom_smooth(method = "lm")+
-  labs(title = "Gráfico que relaciona Idade e Altura",subtitle = "Visualização",
+  labs(title = "Grafico que relaciona Idade e Altura",subtitle = "Visualizacao",
        caption = "Elaborado pelo autor")+ 
   scale_color_discrete(name="Sexo", labels=c("Feminino", "Masculino")) + 
   theme(legend.position = "bottom")
 ```
+
+## Gráficos de Colunas ou Barras
+
+### Gráfico de Colunas com R base
+
+```{r}
+barplot(table(dados$Hobby))
+
+```
+
+
+### Gráfico de Colunas usando ggplot2
+```{r}
+dados %>% 
+  ggplot(aes(Hobby))+
+  geom_bar()
+```
+
