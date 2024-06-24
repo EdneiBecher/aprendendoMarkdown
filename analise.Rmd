@@ -14,6 +14,7 @@ output:
 ```{r setup, include=FALSE}
 library(dplyr) 
 library(ggplot2)
+library(RColorBrewer)
 
 dados<- read.csv2("C:/Users/ednei/OneDrive/R_Nuvem/aprendendoMarkdown/planilha_exemplo_dante.csv", fileEncoding = "latin1")
 ```
@@ -224,6 +225,17 @@ CC %>%
 
 Continua...
 ```{r}
-
+dados %>% 
+  group_by(CorCabelo) %>% 
+  summarise(CC = n()) %>% 
+  ggplot(aes(x=CorCabelo, y=CC, fill = CorCabelo))+
+  geom_col()+
+  scale_fill_manual(values = c("orange1", "black", "wheat2", "goldenrod"))+
+  coord_flip()
+  geom_text(aes(label = CC), hjust= -0.2)+
+  ylim(c(0,9))
 ```
+
+
+
 
