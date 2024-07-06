@@ -231,7 +231,7 @@ dados %>%
   ggplot(aes(x=CorCabelo, y=CC, fill = CorCabelo))+
   geom_col()+
   scale_fill_manual(values = c("orange1", "black", "wheat2", "goldenrod"))+
-  coord_flip()
+  coord_flip()+
   geom_text(aes(label = CC), hjust= -0.2)+
   ylim(c(0,9))
 ```
