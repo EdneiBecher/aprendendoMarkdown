@@ -111,6 +111,12 @@ Por outro lado smothiers ajustam modelos aos dados representados graficamente.
 ggplot(data = diamonds)+
   geom_bar(mapping = aes(x= cut))
 ```
+Poderíamos desejar contar as quantidades de cada coluna. Neste caso podemos usar a função count do package dplyr
+
+```{r}
+count(diamonds, cut)
+```
+
 O algorítimo que fez a contagem é chamado de *stat* que é uma abreviação de estatística. No caso da função geom_bar ela tem duas estatísticas diferentes: count e prop. Como os nomes sugerem a primeira conta as ocorrências e a segunda representa os percentuais. 
 
 ```{r}
@@ -156,5 +162,128 @@ ggplot(data = diamonds)+
   labs(x=NULL, y=NULL)+    # remove os eixos
   coord_polar()
 ```
+Com dados contínuos uma situação corriqueira é precisarmos representar vários recortes ou variáveis sobrepondo histogramas contudo, a leitura deste tipo de gráfico sobreposto não é muito fácil. Principalmente se forem sobrepostos mais do que dois ou três. 
+Para estas situações o uso de cursas sobrepostas pode ser mais ilustrativo e de fácil leitura.
+
+```{r}
+diamonds |> 
+  filter(carat < 3) |> 
+  ggplot(aes(x=carat, color=cut))+
+  geom_freqpoly(binwidth = 0.1)  # tamanho dos recortes
+```
+
+
+O tipo de gráfico acima exibe a contagem de cada valor mas para efeitos de comparação é mais adequado que façamos a exibição pela densidade que padroniza a representação para que a área de cada polígono de frequência seja um.
+
+```{r}
+diamonds |> 
+  ggplot(aes(x=price, y=..density..))+
+  geom_freqpoly(mapping=aes(color=cut), binwidth = 500)
+```
+
+Uma outra alternativa para representar variáveis contínuas extratificadas por uma outra categórica é a utilização de boxplots.
+comparado com a representação acima o boxplot apresenta menos informações mas é muito mais conciso e apresenta uma síntese das principais estatísticas.
+
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x= cut, y=price))+
+  geom_boxplot()
+```
+
+Note que não fica evidente uma tendência na nos dados. O que pode ser melhorado com realizando uma ordenção.
+Se as categorias de variável categórica tiverem nomes longos a representação fica mais elegante se for feita uma rotação na representação. Isso pode ser feito acrescento simplesmente coord_flip.
+
+```{r}
+ggplot(data = diamonds)+
+  geom_boxplot(mapping = aes(x= reorder(cut, price, FUN= median), y=price))
+```
+
+Para representar a relação entre duas variáveis categóricas podemos também utilizar uma mapa de circulos que serão gerados pelo uso de geom_count. Note que o tamanho do círculo está relacionado ao tamanho da contagem.
+
+```{r}
+ggplot(data = diamonds) + 
+  geom_count(mapping= aes(x=cut, y=color))
+```
+
+Uma outra alternativa para representar a relação entre duas variáveis categóricas é utilizar mapas de calor (heatmaps).
+
+```{r}
+diamonds |> 
+  count(cut, color) |> 
+  ggplot(mapping = aes(x=cut, y=color))+
+  geom_tile(mapping = aes(fill=n))
+```
+
+Para representar duas variáveis continuas os gráficos de dispersão são bastante eficeientes e quando acontecem muitos dados sobrepostos uma alternativa viável para um bom número de casos é a utilização do parâmtreto alpha.
+Entretanto, uma outro alternativa que pode ser interessante é particionar uma das variáveis como se fosse categórica e representar utilizando boxplots.
+O parâmetro cut_width particiona a variável com o intervalo especificado.
+
+```{r}
+diamonds |> 
+  filter(carat < 3) |> 
+  ggplot(mapping = aes(x=carat, y=price))+
+  geom_boxplot(mapping = aes(group= cut_width(carat, 0.1)))
+```
+
+No gráfico acima todos os boxplots tem o mesmo tamanho e variam apenas conforem a contagem e os outliers. Mas poderíamos deixá-los mais representativos utilizando varwidth =  TRUE que tornaria a largura proporcional a contagem do intervalo. 
+Um outra maneira seria usando cut_number especificando quantos valores serão incluídos em cada intervalo especificado.
+
+```{r}
+diamonds |> 
+  filter(carat < 3) |> 
+  ggplot(mapping = aes(x=carat, y=price))+
+  geom_boxplot(mapping = aes(group= cut_number(carat, 20)))
+```
+No exemplo abaixo os intervalos foram ampliados para que se tenha menos velas e também foi incluído o parâmetro para que a largura seja proporcional a frequência encontrada. 
+Estes ajustes podem colaborar para que tendências e relações sejam mais facilmente percebidas e identificadas.
+
+```{r}
+diamonds |> 
+  filter(carat < 3) |> 
+  ggplot(mapping = aes(x=carat, y=price))+
+  geom_boxplot(mapping = aes(group= cut_width(carat, 0.2)), varwidth = TRUE)
+```
+
+
+# ReadR package
+
+O objetivo de **readr** é viabilizar uma maneira fácil e amigável  para ler dados retangulares de arquivos delimitados, tais como separados por virgula (csv) e separados por espaço (tsv).   
+Para leremos arquivos separados por vírgula podemos usar *read_csv() ou então read_csv2() para arquivos separados por ponto e vírgula. O primeiro argumento passado é o mais importante pois é o caminho para o arquivo que será lido.  
+È importante saber que as três funções mencionadas nos parágrafos anteriores são casos particulares da função *read_delim*.  
+Alguns parâmetros interessantes, dentre os muitos aceitos por estas funções são:  
+* file - indica o caminho, a conexão ou mesmo os dados brutos do arquivo.  
+* delim - especifica o delimitador das variáveis em cada linha.  
+* col_names - se TRUE (padrão) a primeira linha é interpretada como os nomes das variáveis. Também pode indicar um vetor com os nomes das variáveis caso se deseje fazer alguma alteração.  
+* col_select - permite indicar as colunas que se deseja ler caso não se tenha interessa em todo o dataframe.  
+* skip - numero de linhas para pular antes de ler os dados.  
+* n_max - numero maximo de linhas para ser lido.  
+* na - espeficia que valores serão lidos como casos faltosos. Por padrão são reconhecidos apenas os dados faltando. Por exemplo: na = c('N/A', '', ' ').  
+  
+Outra possibilidade muito interessante é que as vezes os dados estão separados em multiplos arquivos. Nestas situações é possível transferir todos eles para o R de uma vez usando as funções do readr. Por exemplo, se você tiver multiplos arquivos de vendas, uma para cada mês: 01-sales.csv para janeiro, 02-sales.csv para fevereiro, e  03-sales.csv para março. Com read_csv() é possivel ler todos estes dados de uma única vez e gravalos um na sequência do outro no mesmo dataframe. Lembre que os arquivos precisam estar todos na mesma pasta.  
+
+sales_files <- c("data/01-sales.csv", "data/02-sales.csv", "data/03-sales.csv")  
+read_csv(sales_files, id = "file")  # o argumento id adiciona uma nova coluna chamada file  
+
+Par escrever arquivos o pachage readr dispões de write_csv(). Por exemplo: write_csv(students, "students.csv"). O primeiro valor indica o dado constante no ambiente do R que será gravado e o segundo valor indica o nome e a extensão com os dados serão gravados.
+
+Um aspecto importanet é que write_csv não permite que sejam salvos no arquivo detalhes de alterações e ajustes nos dados feitos no ambiente do R, ou seja, são salvos apenas os valores das variáveis. 
+Caso se deseje salvar resultados parciais com todas as informações de ajustes feitos no ambiente do R para continuar o trabalho posteriormente o uso do formato rds que é nativo do R é mais interessante. Neste caso usamos write_rds() e read_rds() respectivamente para escrever e depois para ler os arquivo.
+Por exemplo:
+write_rds(students, "students.rds")
+read_rds("students.rds")
+
+
+## Lendo dados diretamente do clipboard para o R
+
+Pode-se usar a função readClipboard(), que no exemplo abaixo colaria os dados diretamente na variável x.
+
+x <- readClipboard()
+
+Se os dados do clipboard forem tabulares (uma tabela, por exemplo), você também pode utilizar a função read.table() que também permite especificar outras parâmetros. Por exemplo:
+
+x <- read.table(file = "clipboard", sep = "\t", header = FALSE)
+
+Para colar dados copiados de tabelas da internet diretamente pode ser um pouco trabalhoso pois, dependendo do site serão necessárias várias configurações e será necessário verificar a documentação de read.table.
+
 
 
