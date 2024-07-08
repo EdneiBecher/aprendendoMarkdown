@@ -15,6 +15,7 @@ output:
 library(dplyr) 
 library(ggplot2)
 library(RColorBrewer)
+library(forcats)
 
 dados<- read.csv2("C:/Users/ednei/OneDrive/R_Nuvem/aprendendoMarkdown/planilha_exemplo_dante.csv", fileEncoding = "latin1")
 ```
@@ -231,11 +232,32 @@ dados %>%
   ggplot(aes(x=CorCabelo, y=CC, fill = CorCabelo))+
   geom_col()+
   scale_fill_manual(values = c("orange1", "black", "wheat2", "goldenrod"))+
-  coord_flip()
+  coord_flip()+
   geom_text(aes(label = CC), hjust= -0.2)+
   ylim(c(0,9))
 ```
 
 
+## Boxplot
 
+Para representar dados quantitativos estratificados por uma variável qualitativa uma alternativa interessante é utilizar boxplots.
+
+```{r}
+boxplot(Idade ~ DesempenhoMat, data = dados, frame = TRUE, names = c("Bom", "Insuficiente", "Ótimo", "Regular"), col = c("orange", "steelblue", "gray", "yellow"), xlab = "Desempenho em Matemática", ylab = "Idade", main="Boxplot que relaciona a idade com o desempenho em matemática")
+```
+
+
+Podemos também utilizar o ggplot2 para criar boxplots.
+
+```{r}
+ggplot(dados, aes(x=DesempenhoMat, y=Idade))+
+  geom_boxplot(fill="slateblue", alpha = 0.2)+
+  labs(x = "Desempenho em Matemática", title = "Desempenho em Matemática Estratificado por Idade", subtitle = "Boxplots")
+```
+
+Uma estratégia interessante pode ser ordenar os boxplots pelo valor da mediana.
+
+```{r}
+
+```
 
