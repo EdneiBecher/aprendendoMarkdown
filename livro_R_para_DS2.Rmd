@@ -1,0 +1,157 @@
+---
+title: "Livro R para DS - 2"
+author: "Ednei"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    html_document:
+      highlight: textmate # destaque nos codigos
+      number_sections: no  # insere numeracao automatica nas secoes
+      toc: yes # insere um tabela de conteudos/titulos
+      toc_float:  # posiciona a tabela de titulos a esquerda
+        collapsed: no
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(stringr)
+```
+
+## Stringr
+
+É um package incluido no Tidyverse que se destina a manipulação de strings. A grande vantagem em relação as funções do R base é que as funções deste package além de se integrarem nativamente aos outros packages do tidyverse são mais consistentes, ou seja, geram resultados em formatos estáveis e mais facilmente utilizáveis. 
+
+>
+> \\n - nova linha  
+> \\t - tabulação
+>
+
+## Comprimento de string
+
+Note que todas as funções do package stringr começam com str_ e isso ajuda a tornar o seu uso mais intuitivo.
+Para determinarmos o comprimento ou o número de caracteres de uma string usamos a função **str_length()**.
+
+```{r}
+str_length(c("casa", " R para ciência de dados", NA))
+```
+
+## Combinando strings
+
+Para combinar strings podemos usar **str_c**.
+```{r}
+str_c("D", "a", "t", "a")
+```
+
+Podemos utilizr o argumento *sep* para indicar como as strings serão separadas.
+```{r}
+str_c("Data", "Science", sep = "-")
+```
+
+Oberve que a função str_c  é vetorizada e desta forma ela recicla os vetores mais curtos para o mesmo comprimento dos mais longos.
+```{r}
+str_c("Data ", c( 1, 2, 3), " Science")
+```
+
+## Subconjuntos de strings
+
+Par extrair partes de uma string deve-se usar a função **str_sub()**. Devemos indicar a string e os valores iniciais e finais. Cabendo destacar que os valores informados são inclusivos.
+
+```{r}
+str_sub("Abacate", 1, 3)
+```
+Também podemos passar um vetor e assim como acontece com outras funções a vetorização típica de muitas funções do R irá atuar.
+
+```{r}
+stg<- c("Gato", "Kiwi", "Laranja", "Chuva", "Rato")
+
+str_sub(stg, 2, 5)
+```
+
+Caso a string seja curta a função retornará o máximo possivel.
+
+Também podemos aplicar outras funções aos resultados.
+
+```{r}
+str_to_upper(str_sub(stg, 1, 2))
+```
+
+## Combinando padrões e expressões regulares (Regexps)
+
+O padrão mais simples é procurar por uma correspondência exata.
+
+```{r}
+str_view(stg, "to")
+```
+
+O próximo nível de complexidade é utilizarmos . que é capaz de representar um caractere.
+
+```{r}
+str_view(stg, "a.")
+str_view(stg, ".a")
+```
+
+Mas se . substitui qualquer caractere como fazemos quando precisamos localizar ponto? Neste caso precisamos incluir um \ para desabiliar a função especial do ponto mas, como no R uma barra tem função similar é preciso usar \\ antes do ponto.
+
+```{r}
+str_view("O melhor livro para MR. Becher", "\\.")
+```
+
+## Âncoras
+Com frequência as expressões regulares poderão ser localizadas em qualquer ponto da string que esta sendo analisada. Nestes casos pode ser muito útil ancorar, ou seja, indicar um ponto de referência a partir do qual se deseja a localização da expressão.  
+As duas principais âncoras são:  
+* ^ que indica o começo da string.
+* $ que indica o final da string.
+
+```{r}
+str_view(stg, "^Ki")
+```
+```{r}
+str_view(stg, "to$")
+```
+
+### Classes alternativas
+
+Existem vários padrões especiais e saber todos eles demanda bastante tempo e prática. Entretanto, alguns de uso mais frequentes são bastante uteis e fáceis de aprender.
+Quatro formas úteis são:  
+* \d que combina qualquer dígito.
+* \s combina qualquer espaço em branco.
+* [abc] combina a, b ou c.
+* [^abc] combina com qualquer letra menos a, b ou c.
+
+Lembre que para criar uma expressão regular usando \ você precisará digitar duas barras invertidas \\.
+
+```{r}
+str_view(" A casa numero 270 ou a casa numero 360B.", "[casa]")
+```
+```{r}
+str_view(" A casa numero 270 ou a casa numero 360B.", "[^casa]")
+```
+
+```{r}
+str_view(" A casa numero 270 ou a casa numero 360B.", "a\\s")
+```
+
+## Detectando combinações
+
+Usamos a função **str_detect()** para verificar se um vetor possui ou não um padrão especificado. A função retorna um valor lógico.
+
+
+```{r}
+str_detect(stg, "to")
+```
+
+Observe que quando consideramos os valores lógicos numéricamente eles se tornam 0 e 1. Desta forma funções como sum e mean podem ser utilizadas para responder certas questões. Por exemplo: Que proporção de palavras de um vetor terminam com uma vogal>  
+
+```{r}
+mean(str_detect(stg, "[aeiou]$"))
+```
+Podemos usar str_subset para verificar quais palavras se encaixam em certo padrão.
+
+```{r}
+str_subset(stg, "to$")
+```
+
+Uma variação de str_detect é a função str_count que determina quantas vezes uma combinação acontece.
+```{r}
+str_count(stg, "[aeiou]")
+```
+

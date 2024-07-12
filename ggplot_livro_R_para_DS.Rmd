@@ -1,0 +1,289 @@
+---
+title: "GGPLOT2 - Livro R para DS"
+author: "Ednei"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    html_document:
+      highlight: textmate # destaque nos codigos
+      number_sections: no  # insere numeracao automatica nas secoes
+      toc: yes # insere um tabela de conteudos/titulos
+      toc_float:  # posiciona a tabela de titulos a esquerda
+        collapsed: no
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+## O dataframe mpg
+
+O dataframe apresenta as seguintes variáveis:  
+manufacturer - 15 manufacturers
+model - 38 models  
+* displ - displacement in liters 	1.6 - 7.0, median: 3.3  
+* year - year of manufacturing 	1999, 2008  
+* cyl - number of cylinders 	4, 5, 6, 8  
+* trans - type of transmission 	automatic, manual (many sub types)  
+* drv - drive type 	f, r, 4, f=front wheel, r=rear wheel, 4=4 wheel  
+* cty - city mileage 	miles per gallon  
+* hwy - highway mileage 	miles per gallon   
+* fl - fuel type 	5 fuel types (diesel, petrol, electric, etc.)  
+* class - vehicle class 	7 types (compact, SUV, minivan etc.)  
+
+
+```{r mpg}
+summary(mpg)
+
+glimpse(mpg)
+```
+
+## Criand Gráficos com GGPLOT2
+
+O gráfico abaixo mostra a relação entre o tamanho do motor e o consumo na estrada e, além disso, os veículos são diferenciados pela classe.
+Outras opções para diferenciarmos a classe dos veículos seria utilizar size, alpha ou shape para mapear a classe dos veículos.
+
+```{r echo=FALSE}
+ggplot( data =mpg)+
+  geom_point(mapping = aes( x= displ, y = hwy, colour = class))
+```
+
+Podemos também *mapear* as características fora da função aes e, neste caso, não acontecerá a transmissão de informação apenas uma estilização do gráfico. Por exemplo, podemos deixar todos os pontso do gráfico acima da mesma cor (colour), tamanho (size) ou formato (shape).
+
+```{r}
+ggplot( data =mpg)+
+  geom_point(mapping = aes( x= displ, y = hwy), size = 3, colour='blue')
+```
+## Utilizando facetas
+
+Facetas são uma maneira de incluir outras variáveis, particularmente categóricas nas análises. Além disso, elas também permitem visualizar os dados desagregados por cada categoria.
+Para isso usamos a função facet_wrap e precisamos passar um fórmula que inicia com um ~ e depois acrescentamos o nome da variável.
+
+```{r}
+ggplot( data =mpg)+
+  geom_point(mapping = aes( x= displ, y = hwy, colour = class))+
+  facet_wrap(~ class, nrow = 2)
+```
+
+Podemos também criar facetas combinado duas variáveis usando facet_grid. No gráfico abaixo dividimos os veículos pelo número de cilindros e pelo tipo de tração e depois se indica a relação entre o consumo na estrado e o tamanho do motor.
+Se não for conveniente criar facetas em uma das orientações (horizontal ou vertical), basta usar . na fórmula. Por exemplo, . ~ cyl ou então drv ~ ..
+
+```{r}
+ggplot( data =mpg)+
+  geom_point(mapping = aes( x= displ, y = hwy, colour = class))+
+  facet_grid(drv ~ cyl)
+```
+
+Os gráficos de linhas são  muito uteis para representar variáveis contínuas e também para permitir a visualização de tendências mais facilmente. 
+Note no código abaixo que diferente dos anteriores as variáveis displ e hwy não estão na camada da geometria mas na camada principal do comando ggplot, isso indica que neste caso elas são globais e afetam todo o gráfico, já quando a função aes, or exemplo, está localizada na camada geom é tem efeito local e afeta apenas aquela camada.
+Também no gráfico abaixo pode-se observar o efeito da função geom_smooth que acrescenta um curva que aproxima uma curva de regressão. Pode-se suprimir a parte achurada que indica o erro padrão acrescentando se = FALSE e também é possível especificar o método da regressão no parâmetro method, sendo o lm (linear model) o padrão.
+
+```{r}
+ggplot(data = mpg, mapping = aes(x= displ, y= hwy))+
+  geom_point(mapping = aes(colour = class))+
+  geom_smooth()
+```
+
+Uma possivibilidade bastante interssante que o uso de diferentes geometrias traz é que podemos mapear inclusiva dados diferentes para representá-los no mesmo gráfico.
+No caso do gráfico abaixo se utiliza os mesmos pontos do anterior mas a curva apresentada leva em consideração apenas os valores das variáveis para os veículos compactos.
+
+```{r}
+ggplot(data = mpg, mapping = aes(x= displ, y= hwy))+
+  geom_point(mapping = aes(colour = class))+
+  geom_smooth(data = filter(mpg, class == 'compact'), se = FALSE)
+```
+
+## Transformações Estatísticas e Gráficos de Colunas
+
+Usaremos nos próximos gráficos o conjunto de dados *diamonds* que acompanha o ggplot2.
+
+```{r diamonds}
+
+glimpse(diamonds)
+
+```
+Vamos iniciar com um gráfico de colunas simples quantificando a quantidade de diamantes em cada categoria de corte.
+
+Observe no gráfico que será gerado que não indicamos a quantidade, somente a variável categórica que será representada no eixo x. Acontece que a função geom_bar contou a quantidade gerando um novo valor que foi representado no gráfico. Isso também acontece com histogramas e polígonos de frequência.
+Por outro lado smothiers ajustam modelos aos dados representados graficamente.
+
+```{r}
+ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x= cut))
+```
+Poderíamos desejar contar as quantidades de cada coluna. Neste caso podemos usar a função count do package dplyr
+
+```{r}
+count(diamonds, cut)
+```
+
+O algorítimo que fez a contagem é chamado de *stat* que é uma abreviação de estatística. No caso da função geom_bar ela tem duas estatísticas diferentes: count e prop. Como os nomes sugerem a primeira conta as ocorrências e a segunda representa os percentuais. 
+
+```{r}
+ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x= cut, y= ..prop.., group = 1))
+```
+
+Os gráficos de colunas também podem ser coloridos manualmente ou então associando uma variável a um parâmetro. O parãmetro colour altera apenas a cor de contorno das colunas e o parâmetro fill altera o preenchimento.
+
+```{r}
+ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x= cut, fill = cut))
+```
+
+Uma variação interessante é acrescentar uma outr variável a análise. Por exemplo, *clarity* e, neste caso note que as colunas apareceram emplilhadas pelo nível de transparência dos diamantes.
+
+```{r}
+ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x= cut, fill= clarity))
+```
+
+Podemos alterar a forma como as colunas são organizadas alterndo o parâmetro position. As opções disponiveis são: dodge (coloca os objetos lado a lado); fill ( emplinha mas padroniza o tamanho das colunas, sendo bom para comparar proporções); idendity (coloca cada objeto no seu lugar, no contexto do gráfico).
+Existe uma outra posição chamada de jitter que não é util com gráficos de barras mas que pode ser util com gráficos de pontos/dispersão pois evita a sobreposição de pontos.
+
+```{r}
+par(mfrow= c(1,3))
+ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x= cut, fill= clarity), position = 'identity')
+
+ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x= cut, fill= clarity), position = 'dodge')
+
+ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x= cut, fill= clarity), position= 'fill')
+```
+
+Para alterar os sistemas de coordenadas as duas funções mais importantes são coord_flip que troca as posições dos eixos x e y no sistema cartesiano, que é o sistema padrão do R e a função coord_polar que altera a representação para coordenadas no sistema polar.
+
+```{r}
+ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x= cut, fill = cut), show.legend = FALSE, width = 1)+
+  theme(aspect.ratio = 1)+  # delimita uma proporção quadrada 1:1
+  labs(x=NULL, y=NULL)+    # remove os eixos
+  coord_polar()
+```
+Com dados contínuos uma situação corriqueira é precisarmos representar vários recortes ou variáveis sobrepondo histogramas contudo, a leitura deste tipo de gráfico sobreposto não é muito fácil. Principalmente se forem sobrepostos mais do que dois ou três. 
+Para estas situações o uso de cursas sobrepostas pode ser mais ilustrativo e de fácil leitura.
+
+```{r}
+diamonds |> 
+  filter(carat < 3) |> 
+  ggplot(aes(x=carat, color=cut))+
+  geom_freqpoly(binwidth = 0.1)  # tamanho dos recortes
+```
+
+
+O tipo de gráfico acima exibe a contagem de cada valor mas para efeitos de comparação é mais adequado que façamos a exibição pela densidade que padroniza a representação para que a área de cada polígono de frequência seja um.
+
+```{r}
+diamonds |> 
+  ggplot(aes(x=price, y=..density..))+
+  geom_freqpoly(mapping=aes(color=cut), binwidth = 500)
+```
+
+Uma outra alternativa para representar variáveis contínuas extratificadas por uma outra categórica é a utilização de boxplots.
+comparado com a representação acima o boxplot apresenta menos informações mas é muito mais conciso e apresenta uma síntese das principais estatísticas.
+
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x= cut, y=price))+
+  geom_boxplot()
+```
+
+Note que não fica evidente uma tendência na nos dados. O que pode ser melhorado com realizando uma ordenção.
+Se as categorias de variável categórica tiverem nomes longos a representação fica mais elegante se for feita uma rotação na representação. Isso pode ser feito acrescento simplesmente coord_flip.
+
+```{r}
+ggplot(data = diamonds)+
+  geom_boxplot(mapping = aes(x= reorder(cut, price, FUN= median), y=price))
+```
+
+Para representar a relação entre duas variáveis categóricas podemos também utilizar uma mapa de circulos que serão gerados pelo uso de geom_count. Note que o tamanho do círculo está relacionado ao tamanho da contagem.
+
+```{r}
+ggplot(data = diamonds) + 
+  geom_count(mapping= aes(x=cut, y=color))
+```
+
+Uma outra alternativa para representar a relação entre duas variáveis categóricas é utilizar mapas de calor (heatmaps).
+
+```{r}
+diamonds |> 
+  count(cut, color) |> 
+  ggplot(mapping = aes(x=cut, y=color))+
+  geom_tile(mapping = aes(fill=n))
+```
+
+Para representar duas variáveis continuas os gráficos de dispersão são bastante eficeientes e quando acontecem muitos dados sobrepostos uma alternativa viável para um bom número de casos é a utilização do parâmtreto alpha.
+Entretanto, uma outro alternativa que pode ser interessante é particionar uma das variáveis como se fosse categórica e representar utilizando boxplots.
+O parâmetro cut_width particiona a variável com o intervalo especificado.
+
+```{r}
+diamonds |> 
+  filter(carat < 3) |> 
+  ggplot(mapping = aes(x=carat, y=price))+
+  geom_boxplot(mapping = aes(group= cut_width(carat, 0.1)))
+```
+
+No gráfico acima todos os boxplots tem o mesmo tamanho e variam apenas conforem a contagem e os outliers. Mas poderíamos deixá-los mais representativos utilizando varwidth =  TRUE que tornaria a largura proporcional a contagem do intervalo. 
+Um outra maneira seria usando cut_number especificando quantos valores serão incluídos em cada intervalo especificado.
+
+```{r}
+diamonds |> 
+  filter(carat < 3) |> 
+  ggplot(mapping = aes(x=carat, y=price))+
+  geom_boxplot(mapping = aes(group= cut_number(carat, 20)))
+```
+No exemplo abaixo os intervalos foram ampliados para que se tenha menos velas e também foi incluído o parâmetro para que a largura seja proporcional a frequência encontrada. 
+Estes ajustes podem colaborar para que tendências e relações sejam mais facilmente percebidas e identificadas.
+
+```{r}
+diamonds |> 
+  filter(carat < 3) |> 
+  ggplot(mapping = aes(x=carat, y=price))+
+  geom_boxplot(mapping = aes(group= cut_width(carat, 0.2)), varwidth = TRUE)
+```
+
+
+# ReadR package
+
+O objetivo de **readr** é viabilizar uma maneira fácil e amigável  para ler dados retangulares de arquivos delimitados, tais como separados por virgula (csv) e separados por espaço (tsv).   
+Para leremos arquivos separados por vírgula podemos usar *read_csv() ou então read_csv2() para arquivos separados por ponto e vírgula. O primeiro argumento passado é o mais importante pois é o caminho para o arquivo que será lido.  
+È importante saber que as três funções mencionadas nos parágrafos anteriores são casos particulares da função *read_delim*.  
+Alguns parâmetros interessantes, dentre os muitos aceitos por estas funções são:  
+* file - indica o caminho, a conexão ou mesmo os dados brutos do arquivo.  
+* delim - especifica o delimitador das variáveis em cada linha.  
+* col_names - se TRUE (padrão) a primeira linha é interpretada como os nomes das variáveis. Também pode indicar um vetor com os nomes das variáveis caso se deseje fazer alguma alteração.  
+* col_select - permite indicar as colunas que se deseja ler caso não se tenha interessa em todo o dataframe.  
+* skip - numero de linhas para pular antes de ler os dados.  
+* n_max - numero maximo de linhas para ser lido.  
+* na - espeficia que valores serão lidos como casos faltosos. Por padrão são reconhecidos apenas os dados faltando. Por exemplo: na = c('N/A', '', ' ').  
+  
+Outra possibilidade muito interessante é que as vezes os dados estão separados em multiplos arquivos. Nestas situações é possível transferir todos eles para o R de uma vez usando as funções do readr. Por exemplo, se você tiver multiplos arquivos de vendas, uma para cada mês: 01-sales.csv para janeiro, 02-sales.csv para fevereiro, e  03-sales.csv para março. Com read_csv() é possivel ler todos estes dados de uma única vez e gravalos um na sequência do outro no mesmo dataframe. Lembre que os arquivos precisam estar todos na mesma pasta.  
+
+sales_files <- c("data/01-sales.csv", "data/02-sales.csv", "data/03-sales.csv")  
+read_csv(sales_files, id = "file")  # o argumento id adiciona uma nova coluna chamada file  
+
+Par escrever arquivos o pachage readr dispões de write_csv(). Por exemplo: write_csv(students, "students.csv"). O primeiro valor indica o dado constante no ambiente do R que será gravado e o segundo valor indica o nome e a extensão com os dados serão gravados.
+
+Um aspecto importanet é que write_csv não permite que sejam salvos no arquivo detalhes de alterações e ajustes nos dados feitos no ambiente do R, ou seja, são salvos apenas os valores das variáveis. 
+Caso se deseje salvar resultados parciais com todas as informações de ajustes feitos no ambiente do R para continuar o trabalho posteriormente o uso do formato rds que é nativo do R é mais interessante. Neste caso usamos write_rds() e read_rds() respectivamente para escrever e depois para ler os arquivo.
+Por exemplo:
+write_rds(students, "students.rds")
+read_rds("students.rds")
+
+
+## Lendo dados diretamente do clipboard para o R
+
+Pode-se usar a função readClipboard(), que no exemplo abaixo colaria os dados diretamente na variável x.
+
+x <- readClipboard()
+
+Se os dados do clipboard forem tabulares (uma tabela, por exemplo), você também pode utilizar a função read.table() que também permite especificar outras parâmetros. Por exemplo:
+
+x <- read.table(file = "clipboard", sep = "\t", header = FALSE)
+
+Para colar dados copiados de tabelas da internet diretamente pode ser um pouco trabalhoso pois, dependendo do site serão necessárias várias configurações e será necessário verificar a documentação de read.table.
+
+
+

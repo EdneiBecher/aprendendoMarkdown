@@ -1,0 +1,241 @@
+---
+title: "AnaliseEstudantes"
+author: "Ednei"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    html_document:
+      highlight: textmate # destaque nos codigos
+      number_sections: no  # insere numeracao automatica nas secoes
+      toc: yes # insere um tabela de conteudos/titulos
+      toc_float:  # posiciona a tabela de titulos a esquerda
+        collapsed: no
+---
+
+```{r setup, include=FALSE}
+library(dplyr) 
+library(ggplot2)
+library(RColorBrewer)
+
+dados<- read.csv2("C:/Users/ednei/OneDrive/R_Nuvem/aprendendoMarkdown/planilha_exemplo_dante.csv", fileEncoding = "latin1")
+```
+
+## Aprendendo R Markdown
+
+O objetivo deste material é apresentar a análise de um *dataframe* utilizando o **RStudio** e alguns packages do R, no caso ggplot2 e dplyr. Ao mesmo tempo que as análises serão desenvolvidas também serão apresentados textos e comentários.
+
+### Conhecendo e ajustando os dados
+
+A primeira coisa a ser feita é olharmos a estrutura da tabela.
+
+```{r}
+ glimpse(dados)
+```
+
+Podemos verificar que o *dataset* contém `r nrow(dados)` casos e `r ncol(dados)`variáveis, senso as variáveis Sexo, Cor.de.cabelo, Hobby e Desempenho.em.Matemática classificadas de forma inadequada durante importação. Isso porque aparecem como character, ou seja, como strings de texto e na verdade ficaram melhor qualificadas se estivessem como fatores (variáveis categóricas).\
+Assim, para procedermos a alteração podemos alterar a classificação das variáveis podemos utilizar o comando mutate do *package* dplyr.
+
+```{r}
+# alterando a classificação das variaveis usando dplyr
+dados<- dados %>% 
+  mutate(Sexo = as.factor(Sexo),
+         Hobby = as.factor(Hobby),
+         Cor.de.cabelo = as.factor(Cor.de.cabelo))
+```
+
+Acontece que se tentarmos alterar o tipo da variável Desempenho.em.Matemática teremos um erro devido a acentuação, desta forma, para resolvermos o problema precisamos alterar o nome da variável.
+
+```{r}
+#alterando o nomes das variáveis
+#optei por usar R base porque a alteração me parece mais simples e direta
+colnames(dados)[4]<-"Altura"
+colnames(dados)[5]<- "Peso"
+colnames(dados)[6]<- "NumIrmaos"
+colnames(dados)[7]<- "CorCabelo"
+colnames(dados)[9]<- "NumSapato"
+colnames(dados)[11]<- "DesempenhoMat"
+
+#agora alterar o tipo da variavel desempenho
+
+dados<- dados %>% 
+  mutate(DesempenhoMat = as.factor(DesempenhoMat))
+
+#verificar as alterações
+
+glimpse(dados)
+
+```
+
+Outra coisa que devemos fazer é olharmos as primeiras linhas do dataset.
+
+```{r}
+head(dados)
+# para inserir linhas em branco pode-se usar <br>
+```
+
+### Detalhando os dados com medidas e gráficos
+
+Nesta primeira tabela são apresentadas a altura, idade e peso médio dos participantes
+
+```{r, echo=FALSE}
+dados %>% 
+  group_by(Sexo) %>% 
+  summarise(IdadeMedia = round(mean(Idade), 1),
+            AlturaMedia = round(mean(Altura), 1),
+            PesoMedio = round(mean(Peso), 1))
+
+```
+
+## Gráficos
+
+Na sequência vamos construir alguns gráficos. Primeiro usando o R base e depois usando o ggplot2.
+
+### Gráfico usando o comando plot do R base
+
+Serão apresentados dois gráficos nos quais as diferenças estão relacionadas aos parãmetros incluídos no comando.
+
+```{r, echo=FALSE}
+
+# o parâmetro pch indica a forma dos pontos
+# main inclui o titulo, xlab e ylab servem para alterar a legenda dos eixos
+# col para indicar a cor dos pontos mas é possivel especificar (col.main, col.sub, col.lab, col.axis, fg (cor da caixa do grafico))
+
+plot(x=dados$Peso, y=dados$Altura, main= "Relacao entre Peso e Altura", pch=18, col="blue", xlab = "Peso", ylab = "Altura")
+```
+
+Agora vejamos o mesmo gráfico com mais alguns parâmetros.
+
+```{r, echo=FALSE}
+# outros parâmetros que podem ser utilizados
+#ylim e xlim para indicar os limties dos eixos
+# o parâmetro ann exibe ou esconte o nome dos eixos
+# o parâmetro las permite rotar as indicações nos eixos (1, normal; 2- horizontal; 3 - perpendicular e 4 - vertical)
+# os parâmetros cex.main, cex.sub, cex.lab e cex.axis alterar o tamanho da fonte
+# o parâmetro font altera a fonte (1 - normal, 2 - negrito, 3 - italico e 4 - negrito e italico)
+# também é possivel especificar (font.main, fonti.sub, font.axis, font.lab)
+# para alterar o tipo de fonte se utiliza family (verificar as fontes disponiveis - names(pdfFonts()))
+
+plot(x=dados$Peso, y=dados$Altura, main= "Relacao entre Peso e Altura", pch=17, col="green", xlab = "Peso", ylab = "Altura", sub = "Fonte: Autoria propria", ann = TRUE,
+     xlim = c(50, 90), ylim = c(150, 180), cex.main=2, cex.sub=.7, font.sub=1, family="serif")
+```
+
+### Gráficos usando o ggplot2
+
+Uma forma muito popular de criar gráficos no R é utilizar o *package* **ggplot2**.
+
+```{r}
+dados %>% 
+  ggplot(aes(x=Peso, y=Altura, colour = Sexo))+
+  geom_point(shape = 15)+ # alterar a forma dos pontos
+  labs(title = "Grafico que relaciona Idade e Altura",subtitle = "Visualizacao",
+       caption = "Elaborado pelo autor")+ # inserir titulo e subtitulo
+  scale_color_discrete(name="Sexo", labels=c("Feminino", "Masculino")) + # alterar os nomes na legenda
+  theme(legend.position = "bottom") # alterar a posição da legenda
+```
+
+## Modelo Regressão Linear
+
+Para descrever os dados algébricamente, identificar e validar algébricamente modelos matemáticos que descrevem dados um dos métodos mais comuns é a regressão linear. Nesta etapa usaremos os mesmos dados utilizados nos casas anterirores no qual estudamos a base de dados *mtcars*.
+
+### Usando R base
+
+Vamos inserir um reta modelando os dados empregados no gráfico acima.
+
+```{r, echo=FALSE}
+mod1<- lm(dados$Peso~ dados$Altura)
+plot(x=dados$Peso, y=dados$Altura, main= "Relacao entre Peso e Altura", pch=10, col="red", xlab = "Peso", ylab = "Altura")
+abline(lm(dados$Altura~ dados$Peso))
+
+```
+
+Podemos analisar todos os parâmetros resultantes da função lm.
+
+```{r}
+summary(mod1)
+```
+
+### Usando Ggplot2
+
+Agora fazendo a mesma regressão no ggplot2.
+
+```{r}
+dados %>% 
+  ggplot(aes(x=Peso, y=Altura))+
+  geom_point(shape = 15)+
+  geom_smooth(method = "lm")+
+  labs(title = "Grafico que relaciona Idade e Altura",subtitle = "Visualizacao",
+       caption = "Elaborado pelo autor")+ 
+  scale_color_discrete(name="Sexo", labels=c("Feminino", "Masculino")) + 
+  theme(legend.position = "bottom")
+```
+
+## Gráficos de Colunas ou Barras
+
+Inicalmente se construirá um gráfico de barras/colunas que tabelam uma variável categórica e depois exibem o gráfico e, na sequência se procederá a construção de um outro gráfico no qual se relacionará duas variáveis, uma quantitativa e outra categórica.
+
+### Gráfico de Colunas com R base
+
+```{r}
+par(mfrow=c(1,2)) # dividir a tela em 1 linha e 2 colunas
+
+barplot(table(dados$Hobby), main="Grafico dos Hobbys", ylim = c(0,6), border = "blue",
+        names.arg = c("Ba.", "Ci.", "Co.", "Fu.", "Le.", "Mu.")) # grafico de colunas
+# seria possivel armazenar dos gerados por table em um variavel
+
+barplot(prop.table(table(dados$Hobby))*100, main="Gráfico Percentual dos Hobbys", ylim = c(0,7), col = c("darkgrey", "darkblue", "orange", "darkgreen", "red","lightgrey"), horiz = TRUE) # grafico de colunas percentual
+
+
+par(mfrow=c(1,1)) # retornar ao padrao da tela
+
+```
+
+### Gráfico de Colunas usando ggplot2
+
+```{r}
+
+dados %>% 
+  ggplot(aes(Hobby))+
+  geom_bar(fill="steelblue")
+
+# para girar as colunas basta acrescentar coord_flip()
+```
+
+### Gráficos de Colunas/Barras para uma variável quantitativa e outro categórica
+
+Agora se construirá um outro gráfico de colunas/barras mas desta vez se utilizará uma variável quantitativa e outra categórica.
+
+```{r}
+dados %>% 
+  group_by(CorCabelo, Sexo) %>% 
+  summarise(CC = n()) %>% 
+  ggplot(aes(x=CorCabelo, y=CC, fill = Sexo))+
+  geom_col()
+```
+Também podemos exibir as colunas lado a lado. Note que neste caso foi necessário criar um outro dataframe pois a combinação das variáveis cor de cabelo e sexo, para os individudos do sexo masculino ruivos tem contagem zero. Desta forma, quando o gráfico é gerado diretamente pelo Ggplot2 as duas subcategorias masculino e feminino são unidas gerando uma coluna com o dobro do tamanho.
+
+```{r}
+
+CC<- table(dados$CorCabelo, dados$Sexo)
+CC<- as.data.frame(CC)
+  
+CC %>% 
+  ggplot(aes(x=Var1, y=Freq, fill = Var2))+
+  geom_col(position = "dodge", color="black", size= 0.5)
+  
+```
+
+Continua...
+```{r}
+dados %>% 
+  group_by(CorCabelo) %>% 
+  summarise(CC = n()) %>% 
+  ggplot(aes(x=CorCabelo, y=CC, fill = CorCabelo))+
+  geom_col()+
+  scale_fill_manual(values = c("orange1", "black", "wheat2", "goldenrod"))+
+  coord_flip()+
+  geom_text(aes(label = CC), hjust= -0.2)+
+  ylim(c(0,9))
+```
+
+
+
+
